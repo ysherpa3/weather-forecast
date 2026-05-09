@@ -14,12 +14,21 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
 
-  const res = await fetch(owm.geocode(q, key), { next: { revalidate: 60 } });
-  const data = await res.json();
+  let res: Response;
+  let data: unknown;
+  try {
+    res = await fetch(owm.geocode(q, key), { next: { revalidate: 60 } });
+    data = await res.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to reach geocoding service" },
+      { status: 502 },
+    );
+  }
 
   if (!res.ok)
     return NextResponse.json(
-      { error: data.message ?? "Geocoding failed" },
+      { error: (data as { message?: string }).message ?? "Geocoding failed" },
       { status: res.status },
     );
 

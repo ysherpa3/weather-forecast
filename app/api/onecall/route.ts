@@ -41,15 +41,25 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
 
-  const res = await fetch(owm.onecall(lat, lon, units, key), {
-    next: { revalidate: 300 },
-  });
-  const data = await res.json();
+  let res: Response;
+  let data: unknown;
+  try {
+    res = await fetch(owm.onecall(lat, lon, units, key), {
+      next: { revalidate: 300 },
+    });
+    data = await res.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to reach weather service" },
+      { status: 502 },
+    );
+  }
 
   if (!res.ok) {
     return NextResponse.json(
       {
-        error: (data as { message?: string }).message ?? "Weather fetch failed",
+        error:
+          (data as { message?: string }).message ?? "Weather fetch failed",
       },
       { status: res.status },
     );
