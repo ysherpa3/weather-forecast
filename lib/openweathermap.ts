@@ -1,4 +1,5 @@
-import { OWM_BASE, GEOCODE_LIMIT } from "@/constants";
+const OWM_BASE = "https://api.openweathermap.org";
+const GEOCODE_LIMIT = 5;
 
 export function apiKey(): string | null {
   const k = process.env.OPENWEATHERMAP_API_KEY;

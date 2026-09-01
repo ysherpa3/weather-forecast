@@ -1,14 +1,7 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "openweathermap.org",
-      },
-    ],
-  },
-};
+// No images.remotePatterns on purpose: the OWM icons are 1-3 KB PNGs served `unoptimized`.
+// Add it back if any <Image> drops `unoptimized`.
+const nextConfig: NextConfig = {};
 
 export default nextConfig;

@@ -1,5 +1,7 @@
 "use client";
 
+import { DEFAULT_BG } from "@/lib/utils";
+
 export default function Error({
   error,
   reset,
@@ -10,10 +12,7 @@ export default function Error({
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
-      style={{
-        background:
-          "linear-gradient(135deg, #0d1117 0%, #111520 50%, #0a0e16 100%)",
-      }}
+      style={DEFAULT_BG}
     >
       <div className="text-center space-y-4">
         <p className="text-red-300 text-sm">{error.message}</p>

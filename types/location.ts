@@ -6,8 +6,3 @@ export interface GeocodingResult {
   country: string;
   state?: string;
 }
-
-export interface Coords {
-  lat: number;
-  lon: number;
-}
