@@ -6,19 +6,27 @@ interface Props {
   onSelect: (item: GeocodingResult) => void;
 }
 
+const panel =
+  "absolute z-50 top-full mt-1.5 w-full rounded-xl bg-[rgba(10,14,22,0.92)] backdrop-blur-xl border border-white/10 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.5)]";
+
 export default function Suggestions({ items, activeIndex, onSelect }: Props) {
-  if (items.length === 0) return null;
+  if (items.length === 0)
+    return (
+      <div role="status" className={`${panel} px-4 py-3 text-sm text-white/55`}>
+        No cities found
+      </div>
+    );
 
   return (
     <ul
       id="city-autocomplete-list"
       role="listbox"
       aria-label="City suggestions"
-      className="absolute z-50 top-full mt-1.5 w-full rounded-xl bg-[rgba(10,14,22,0.92)] backdrop-blur-xl border border-white/10 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+      className={panel}
     >
       {items.map((item, index) => (
         <li
-          key={index}
+          key={`${item.lat},${item.lon}`}
           id={`city-item-${index}`}
           role="option"
           aria-selected={index === activeIndex}

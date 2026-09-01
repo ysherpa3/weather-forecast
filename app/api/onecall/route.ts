@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { apiKey, owm } from "@/lib/openweathermap";
-import type { DailyItem } from "@/types/weather";
+import { precipType } from "@/lib/utils";
+import type { DailyItem, OnecallHourly } from "@/types/weather";
 
 interface OWMDailySlot {
   dt: number;
@@ -17,8 +18,8 @@ interface OWMDailySlot {
 interface OWMOneCallResponse {
   timezone_offset: number;
   current: object;
-  hourly: Array<object>;
-  daily: OWMDailySlot[];
+  hourly?: OnecallHourly[];
+  daily?: OWMDailySlot[];
 }
 
 export async function GET(request: NextRequest) {
@@ -68,13 +69,28 @@ export async function GET(request: NextRequest) {
   const { timezone_offset, current, hourly, daily } =
     data as OWMOneCallResponse;
 
-  const today = {
-    tempMin: Math.round(daily[0].temp.min),
-    tempMax: Math.round(daily[0].temp.max),
-  };
+  // OWM can omit daily/hourly entirely for some coords/plans — don't crash on it
+  const dailySlots = daily ?? [];
+  const hourlySlots = hourly ?? [];
+
+  const today = dailySlots[0]
+    ? {
+        tempMin: Math.round(dailySlots[0].temp.min),
+        tempMax: Math.round(dailySlots[0].temp.max),
+      }
+    : null;
+
+  // real precipitation probability for the coming hour, not a guess from the condition code
+  const nextHour = hourlySlots[0];
+  const precip = nextHour
+    ? {
+        pct: Math.round(nextHour.pop * 100),
+        type: precipType(nextHour.weather[0].id),
+      }
+    : null;
 
   // daily[0] is today — skip it, take the next 7
-  const days: DailyItem[] = daily.slice(1, 8).map((slot) => ({
+  const days: DailyItem[] = dailySlots.slice(1, 8).map((slot) => ({
     dateLabel: new Date((slot.dt + timezone_offset) * 1000).toLocaleDateString(
       "en-US",
       {
@@ -92,9 +108,10 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     current,
-    hourly: (hourly as Array<object>).slice(0, 12),
+    hourly: hourlySlots.slice(0, 12),
     today,
     days,
+    precip,
     timezone_offset,
   });
 }

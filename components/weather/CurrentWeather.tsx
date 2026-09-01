@@ -8,13 +8,7 @@ import {
   Sunset,
   Navigation2,
 } from "lucide-react";
-import {
-  windDirection,
-  humidityLabel,
-  precipFromWeatherId,
-  tempUnit,
-  windUnit,
-} from "@/lib/utils";
+import { windDirection, humidityLabel, tempUnit, windUnit } from "@/lib/utils";
 
 interface Props {
   current: OnecallCurrent;
@@ -23,6 +17,7 @@ interface Props {
   country: string;
   units: Units;
   todayHighLow?: { tempMin: number; tempMax: number } | null;
+  precip?: { pct: number; type: string } | null;
 }
 
 function Detail({
@@ -61,6 +56,7 @@ export default function CurrentWeather({
   country,
   units,
   todayHighLow,
+  precip,
 }: Props) {
   const weather = current.weather[0];
   const localTime = new Date((current.dt + timezone) * 1000);
@@ -101,12 +97,12 @@ export default function CurrentWeather({
         ? `${feelsDiff}° warmer`
         : `${Math.abs(feelsDiff)}° cooler`;
 
-  const { pct: precipPct, sub: precipSub } = precipFromWeatherId(weather.id);
+  // observed rain/snow right now beats the forecast label for the coming hour
   const precipSubFinal = current.rain?.["1h"]
     ? "Rain"
     : current.snow?.["1h"]
       ? "Snow"
-      : precipSub;
+      : (precip?.type ?? "Unlikely");
 
   return (
     <>
@@ -214,7 +210,7 @@ export default function CurrentWeather({
           <Detail
             icon={<CloudRain className="w-4 h-4" aria-hidden="true" />}
             label="Precip."
-            value={`${precipPct}%`}
+            value={precip ? `${precip.pct}%` : "—"}
             sub={precipSubFinal}
           />
           <Detail

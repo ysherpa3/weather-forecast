@@ -22,23 +22,14 @@ export function windUnit(units: Units): string {
   return units === "metric" ? "m/s" : "mph";
 }
 
-export function precipFromWeatherId(id: number): { pct: number; sub: string } {
-  let pct: number;
-  if (id >= 200 && id <= 699) pct = 100;
-  else if (id === 800) pct = 0;
-  else if (id === 801) pct = 10;
-  else if (id === 802) pct = 20;
-  else if (id === 803) pct = 35;
-  else if (id === 804) pct = 45;
-  else pct = 20;
-
-  let sub = "Unlikely";
-  if (id >= 200 && id <= 299) sub = "Thunderstorm";
-  else if (id >= 300 && id <= 399) sub = "Drizzle";
-  else if (id >= 500 && id <= 599) sub = "Rain";
-  else if (id >= 600 && id <= 699) sub = "Snow";
-
-  return { pct, sub };
+// Ranges are OWM condition-code groups, not arbitrary:
+// https://openweathermap.org/weather-conditions
+export function precipType(id: number): string {
+  if (id >= 200 && id <= 299) return "Thunderstorm";
+  if (id >= 300 && id <= 399) return "Drizzle";
+  if (id >= 500 && id <= 599) return "Rain";
+  if (id >= 600 && id <= 699) return "Snow";
+  return "Unlikely";
 }
 
 export function getBackgroundStyle(weatherMain: string, isDay: boolean): Style {
@@ -48,6 +39,7 @@ export function getBackgroundStyle(weatherMain: string, isDay: boolean): Style {
         "linear-gradient(135deg, #05070f 0%, #070a18 50%, #050810 100%)",
     };
   }
+  // Keys are OWM `weather.main` values; anything unlisted falls back to Clear.
   const gradients: Record<string, string> = {
     Clear: "linear-gradient(135deg, #0a1628 0%, #0d2040 50%, #152d52 100%)",
     Clouds: "linear-gradient(135deg, #0e1018 0%, #181b26 50%, #131620 100%)",

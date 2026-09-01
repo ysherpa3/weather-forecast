@@ -102,6 +102,7 @@ export default function WeatherDashboard() {
               country={selectedCity.country}
               units={units}
               todayHighLow={data.today}
+              precip={data.precip}
             />
             <HourlyForecast
               hourly={data.hourly}

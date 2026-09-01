@@ -50,7 +50,8 @@ export interface DailyItem {
 export interface OnecallData {
   current: OnecallCurrent;
   hourly: OnecallHourly[];
-  today: { tempMin: number; tempMax: number };
+  today: { tempMin: number; tempMax: number } | null;
+  precip: { pct: number; type: string } | null;
   days: DailyItem[];
   timezone_offset: number;
 }

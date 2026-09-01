@@ -10,17 +10,12 @@ interface Props {
 }
 
 export default function SearchBar({ onSelect }: Props) {
-  const onSelectRef = useRef(onSelect);
-  useEffect(() => {
-    onSelectRef.current = onSelect;
-  }, [onSelect]);
-
   const [inputValue, setInputValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(-1);
 
-  const { results, isLoading } = useGeocode(searchQuery);
-  const isOpen = results.length > 0 && searchQuery.length >= 2;
+  const { results, isLoading, notFound } = useGeocode(searchQuery);
+  const isOpen = searchQuery.length >= 2 && (results.length > 0 || notFound);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -52,7 +47,7 @@ export default function SearchBar({ onSelect }: Props) {
     setInputValue(label);
     setSearchQuery("");
     setActiveIndex(-1);
-    onSelectRef.current(item);
+    onSelect(item);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -96,7 +91,9 @@ export default function SearchBar({ onSelect }: Props) {
           onKeyDown={handleKeyDown}
           placeholder="Search for a city…"
           aria-autocomplete="list"
-          aria-controls={isOpen ? "city-autocomplete-list" : undefined}
+          aria-controls={
+            results.length > 0 ? "city-autocomplete-list" : undefined
+          }
           aria-activedescendant={
             activeIndex >= 0 ? `city-item-${activeIndex}` : undefined
           }

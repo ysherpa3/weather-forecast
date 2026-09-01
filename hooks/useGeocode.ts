@@ -2,7 +2,12 @@ import { useReducer, useEffect } from "react";
 import type { GeocodingResult } from "@/types/location";
 import { useDebounce } from "./useDebounce";
 
-type State = { results: GeocodingResult[]; isLoading: boolean };
+type State = {
+  results: GeocodingResult[];
+  isLoading: boolean;
+  // a fetch has completed, so an empty `results` means "no matches" rather than "not asked yet"
+  searched: boolean;
+};
 type Action =
   | { type: "fetch" }
   | { type: "success"; results: GeocodingResult[] }
@@ -13,9 +18,9 @@ function reducer(state: State, action: Action): State {
     case "fetch":
       return { ...state, isLoading: true };
     case "success":
-      return { results: action.results, isLoading: false };
+      return { results: action.results, isLoading: false, searched: true };
     case "error":
-      return { results: [], isLoading: false };
+      return { results: [], isLoading: false, searched: false };
   }
 }
 
@@ -23,6 +28,7 @@ export function useGeocode(query: string) {
   const [state, dispatch] = useReducer(reducer, {
     results: [],
     isLoading: false,
+    searched: false,
   });
   const debouncedQuery = useDebounce(query, 300);
 
@@ -51,5 +57,10 @@ export function useGeocode(query: string) {
   return {
     results: active ? state.results : [],
     isLoading: active && state.isLoading,
+    notFound:
+      active &&
+      !state.isLoading &&
+      state.searched &&
+      state.results.length === 0,
   };
 }
