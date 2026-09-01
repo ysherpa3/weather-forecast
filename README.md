@@ -8,6 +8,9 @@ Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · Zustand
 
 ## Setup
 
+Requires Node 22.18 or newer: the tests are TypeScript files run directly by
+Node, which needs its built-in type stripping.
+
 ```bash
 pnpm install
 ```
@@ -22,4 +25,10 @@ Requires an [OpenWeatherMap One Call 3.0](https://openweathermap.org/api/one-cal
 
 ```bash
 pnpm dev
+```
+
+## Tests
+
+```bash
+pnpm test
 ```
