@@ -1,27 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { apiKey, owm } from "@/lib/openweathermap";
-import { precipType } from "@/lib/utils";
+import { transformOnecall, type OWMOneCallResponse } from "@/lib/onecall";
 import { rateLimit } from "@/lib/ratelimit";
-import type { DailyItem, OnecallHourly } from "@/types/weather";
-
-interface OWMDailySlot {
-  dt: number;
-  temp: { min: number; max: number };
-  weather: Array<{
-    id: number;
-    main: string;
-    description: string;
-    icon: string;
-  }>;
-  pop: number;
-}
-
-interface OWMOneCallResponse {
-  timezone_offset: number;
-  current: object;
-  hourly?: OnecallHourly[];
-  daily?: OWMDailySlot[];
-}
 
 /** Validated before it reaches the upstream URL, so a crafted value can't append its own params. */
 function coord(value: string | null, max: number): number | null {
@@ -77,52 +57,5 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const { timezone_offset, current, hourly, daily } =
-    data as OWMOneCallResponse;
-
-  // OWM can omit daily/hourly entirely for some coords/plans — don't crash on it
-  const dailySlots = daily ?? [];
-  const hourlySlots = hourly ?? [];
-
-  const today = dailySlots[0]
-    ? {
-        tempMin: Math.round(dailySlots[0].temp.min),
-        tempMax: Math.round(dailySlots[0].temp.max),
-      }
-    : null;
-
-  // real precipitation probability for the coming hour, not a guess from the condition code
-  const nextHour = hourlySlots[0];
-  const precip = nextHour
-    ? {
-        pct: Math.round(nextHour.pop * 100),
-        type: precipType(nextHour.weather[0].id),
-      }
-    : null;
-
-  // daily[0] is today — skip it, take the next 7
-  const days: DailyItem[] = dailySlots.slice(1, 8).map((slot) => ({
-    dateLabel: new Date((slot.dt + timezone_offset) * 1000).toLocaleDateString(
-      "en-US",
-      {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        timeZone: "UTC",
-      },
-    ),
-    tempMin: Math.round(slot.temp.min),
-    tempMax: Math.round(slot.temp.max),
-    weather: slot.weather[0],
-    popMax: slot.pop,
-  }));
-
-  return NextResponse.json({
-    current,
-    hourly: hourlySlots.slice(0, 12),
-    today,
-    days,
-    precip,
-    timezone_offset,
-  });
+  return NextResponse.json(transformOnecall(data as OWMOneCallResponse));
 }
