@@ -7,7 +7,7 @@ export function apiKey(): string | null {
 }
 
 export const owm = {
-  onecall: (lat: string, lon: string, units: string, k: string) =>
+  onecall: (lat: number, lon: number, units: string, k: string) =>
     `${OWM_BASE}/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=${units}&appid=${k}`,
 
   geocode: (q: string, k: string) =>

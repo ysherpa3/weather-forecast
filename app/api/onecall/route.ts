@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { apiKey, owm } from "@/lib/openweathermap";
 import { precipType } from "@/lib/utils";
+import { rateLimit } from "@/lib/ratelimit";
 import type { DailyItem, OnecallHourly } from "@/types/weather";
 
 interface OWMDailySlot {
@@ -22,16 +23,26 @@ interface OWMOneCallResponse {
   daily?: OWMDailySlot[];
 }
 
+/** Validated before it reaches the upstream URL, so a crafted value can't append its own params. */
+function coord(value: string | null, max: number): number | null {
+  if (value === null || value.trim() === "") return null;
+  const n = Number(value);
+  return Number.isFinite(n) && Math.abs(n) <= max ? n : null;
+}
+
 export async function GET(request: NextRequest) {
+  if (!rateLimit(request))
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+
   const { searchParams } = new URL(request.url);
-  const lat = searchParams.get("lat");
-  const lon = searchParams.get("lon");
+  const lat = coord(searchParams.get("lat"), 90);
+  const lon = coord(searchParams.get("lon"), 180);
   const units =
     searchParams.get("units") === "imperial" ? "imperial" : "metric";
 
-  if (!lat || !lon)
+  if (lat === null || lon === null)
     return NextResponse.json(
-      { error: "lat and lon are required" },
+      { error: "lat and lon must be valid coordinates" },
       { status: 400 },
     );
 

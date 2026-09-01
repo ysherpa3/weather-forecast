@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { apiKey, owm } from "@/lib/openweathermap";
+import { rateLimit } from "@/lib/ratelimit";
 
 export async function GET(request: NextRequest) {
+  if (!rateLimit(request))
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim();
 
