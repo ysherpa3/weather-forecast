@@ -17,7 +17,7 @@ export default function WeatherDashboard() {
 
   const lat = selectedCity?.lat ?? null;
   const lon = selectedCity?.lon ?? null;
-  const { data, isLoading, error } = useOnecall(lat, lon, units);
+  const { data, isLoading, error } = useOnecall(lat, lon);
 
   const isDay = data
     ? data.current.dt >= data.current.sunrise &&

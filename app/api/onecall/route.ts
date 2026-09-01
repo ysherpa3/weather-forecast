@@ -17,9 +17,6 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const lat = coord(searchParams.get("lat"), 90);
   const lon = coord(searchParams.get("lon"), 180);
-  const units =
-    searchParams.get("units") === "imperial" ? "imperial" : "metric";
-
   if (lat === null || lon === null)
     return NextResponse.json(
       { error: "lat and lon must be valid coordinates" },
@@ -36,7 +33,7 @@ export async function GET(request: NextRequest) {
   let res: Response;
   let data: unknown;
   try {
-    res = await fetch(owm.onecall(lat, lon, units, key), {
+    res = await fetch(owm.onecall(lat, lon, key), {
       next: { revalidate: 300 },
     });
     data = await res.json();

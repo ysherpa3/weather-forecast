@@ -38,17 +38,17 @@ function payload(over: Partial<OWMOneCallResponse> = {}): OWMOneCallResponse {
   };
 }
 
-test("today comes from daily[0], rounded", () => {
+test("today passes daily[0] through unrounded, in Celsius", () => {
   assert.deepEqual(transformOnecall(payload()).today, {
-    tempMin: 10,
-    tempMax: 21,
+    tempMin: 10.4,
+    tempMax: 20.6,
   });
 });
 
 test("days skips today and caps at 7", () => {
   const out = transformOnecall(payload());
   assert.equal(out.days.length, 7);
-  assert.equal(out.days[0].tempMin, 11); // daily[1], not daily[0]
+  assert.equal(out.days[0].tempMin, 11.4); // daily[1], not daily[0]
 });
 
 test("hourly is capped at 12 slots", () => {

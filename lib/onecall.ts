@@ -28,10 +28,12 @@ export function transformOnecall(data: OWMOneCallResponse): OnecallData {
   const dailySlots = daily ?? [];
   const hourlySlots = hourly ?? [];
 
+  // Temperatures stay unrounded and in Celsius; the client converts and rounds at
+  // display time, so toggling units costs no refetch.
   const today = dailySlots[0]
     ? {
-        tempMin: Math.round(dailySlots[0].temp.min),
-        tempMax: Math.round(dailySlots[0].temp.max),
+        tempMin: dailySlots[0].temp.min,
+        tempMax: dailySlots[0].temp.max,
       }
     : null;
 
@@ -55,8 +57,8 @@ export function transformOnecall(data: OWMOneCallResponse): OnecallData {
         timeZone: "UTC",
       },
     ),
-    tempMin: Math.round(slot.temp.min),
-    tempMax: Math.round(slot.temp.max),
+    tempMin: slot.temp.min,
+    tempMax: slot.temp.max,
     weather: slot.weather[0],
     popMax: slot.pop,
   }));

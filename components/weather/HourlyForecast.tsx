@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
 import type { OnecallHourly, Units } from "@/types/weather";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
-import { tempUnit } from "@/lib/utils";
+import { tempUnit, temp } from "@/lib/utils";
 
 interface Props {
   hourly: OnecallHourly[];
@@ -15,11 +15,11 @@ interface Props {
 function HourlySlot({
   item,
   timezone,
-  tUnit,
+  units,
 }: {
   item: OnecallHourly;
   timezone: number;
-  tUnit: string;
+  units: Units;
 }) {
   const localTime = new Date((item.dt + timezone) * 1000);
   const timeStr = localTime.toLocaleTimeString("en-US", {
@@ -40,8 +40,8 @@ function HourlySlot({
         unoptimized
       />
       <span className="text-white font-semibold text-sm tabular-nums">
-        {Math.round(item.temp)}
-        {tUnit}
+        {temp(item.temp, units)}
+        {tempUnit(units)}
       </span>
       {pop > 0 && (
         <span className="text-blue-300 text-xs tabular-nums">{pop}%</span>
@@ -55,7 +55,6 @@ export default function HourlyForecast({ hourly, timezone, units }: Props) {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const tUnit = tempUnit(units);
 
   const updateScrollState = useCallback(() => {
     const el = scrollRef.current;
@@ -126,7 +125,7 @@ export default function HourlyForecast({ hourly, timezone, units }: Props) {
                   key={item.dt}
                   item={item}
                   timezone={timezone}
-                  tUnit={tUnit}
+                  units={units}
                 />
               ))}
             </div>

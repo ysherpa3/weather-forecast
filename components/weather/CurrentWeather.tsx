@@ -8,7 +8,14 @@ import {
   Sunset,
   Navigation2,
 } from "lucide-react";
-import { windDirection, humidityLabel, tempUnit, windUnit } from "@/lib/utils";
+import {
+  windDirection,
+  humidityLabel,
+  tempUnit,
+  windUnit,
+  temp,
+  wind,
+} from "@/lib/utils";
 
 interface Props {
   current: OnecallCurrent;
@@ -89,7 +96,7 @@ export default function CurrentWeather({
     timeZone: "UTC",
   });
 
-  const feelsDiff = Math.round(current.feels_like) - Math.round(current.temp);
+  const feelsDiff = temp(current.feels_like, units) - temp(current.temp, units);
   const feelsContext =
     feelsDiff === 0
       ? "Same as actual"
@@ -130,14 +137,14 @@ export default function CurrentWeather({
 
       <div className="px-4 py-4 sm:px-6 sm:py-5">
         <div className="text-6xl sm:text-7xl font-light text-white tracking-tight leading-none tabular-nums">
-          {Math.round(current.temp)}°
+          {temp(current.temp, units)}°
         </div>
         <div className="text-base text-white/80 mt-2 capitalize font-medium">
           {weather.description}
         </div>
         <div className="flex items-center gap-1.5 mt-1 flex-wrap">
           <span className="text-sm text-white/60">
-            Feels like {Math.round(current.feels_like)}
+            Feels like {temp(current.feels_like, units)}
             {tUnit}
           </span>
           <span className="text-white/20 select-none" aria-hidden="true">
@@ -148,14 +155,14 @@ export default function CurrentWeather({
         {todayHighLow && (
           <div className="flex items-center gap-1.5 mt-1">
             <span className="text-sm text-white/70 tabular-nums">
-              <span className="sr-only">High: </span>H: {todayHighLow.tempMax}
+              <span className="sr-only">High: </span>H: {temp(todayHighLow.tempMax, units)}
               {tUnit}
             </span>
             <span className="text-white/20 select-none" aria-hidden="true">
               ·
             </span>
             <span className="text-sm text-white/55 tabular-nums">
-              <span className="sr-only">Low: </span>L: {todayHighLow.tempMin}
+              <span className="sr-only">Low: </span>L: {temp(todayHighLow.tempMin, units)}
               {tUnit}
             </span>
           </div>
@@ -204,7 +211,7 @@ export default function CurrentWeather({
               </div>
             }
             label="Wind"
-            value={`${Math.round(current.wind_speed)} ${wUnit}`}
+            value={`${wind(current.wind_speed, units)} ${wUnit}`}
             sub={windDirection(current.wind_deg)}
           />
           <Detail

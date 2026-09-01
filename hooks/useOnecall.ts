@@ -1,5 +1,5 @@
 import { useReducer, useEffect } from "react";
-import type { OnecallData, Units } from "@/types/weather";
+import type { OnecallData } from "@/types/weather";
 
 type State = {
   data: OnecallData | null;
@@ -22,11 +22,7 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-export function useOnecall(
-  lat: number | null,
-  lon: number | null,
-  units: Units,
-) {
+export function useOnecall(lat: number | null, lon: number | null) {
   const [state, dispatch] = useReducer(reducer, {
     data: null,
     isLoading: false,
@@ -39,7 +35,7 @@ export function useOnecall(
     let cancelled = false;
     dispatch({ type: "fetch" });
 
-    fetch(`/api/onecall?lat=${lat}&lon=${lon}&units=${units}`)
+    fetch(`/api/onecall?lat=${lat}&lon=${lon}`)
       .then(async (r) => {
         const d = await r.json();
         if (!r.ok) throw new Error(d.error ?? "Failed to fetch weather");
@@ -59,7 +55,7 @@ export function useOnecall(
     return () => {
       cancelled = true;
     };
-  }, [lat, lon, units]);
+  }, [lat, lon]);
 
   if (lat === null || lon === null)
     return { data: null, isLoading: false, error: null };

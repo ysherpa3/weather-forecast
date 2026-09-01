@@ -22,6 +22,19 @@ export function windUnit(units: Units): string {
   return units === "metric" ? "m/s" : "mph";
 }
 
+// The API is always queried in metric; imperial is a display-time conversion, so
+// toggling units costs no request. Round only after converting — rounding first
+// and converting the rounded value lands up to a degree off.
+export function temp(celsius: number, units: Units): number {
+  const rounded = Math.round(units === "metric" ? celsius : celsius * 1.8 + 32);
+  // Math.round returns -0 for inputs just below zero, which renders as "-0°"
+  return rounded === 0 ? 0 : rounded;
+}
+
+export function wind(ms: number, units: Units): number {
+  return Math.round(units === "metric" ? ms : ms * 2.236936);
+}
+
 // Ranges are OWM condition-code groups, not arbitrary:
 // https://openweathermap.org/weather-conditions
 export function precipType(id: number): string {

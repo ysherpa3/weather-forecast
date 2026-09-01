@@ -4,14 +4,14 @@ import { useState } from "react";
 import Image from "next/image";
 import type { DailyItem, Units } from "@/types/weather";
 import { ChevronDown, Droplet } from "lucide-react";
-import { tempUnit } from "@/lib/utils";
+import { tempUnit, temp } from "@/lib/utils";
 
 interface Props {
   days: DailyItem[];
   units: Units;
 }
 
-function DailyRow({ day, tUnit }: { day: DailyItem; tUnit: string }) {
+function DailyRow({ day, units }: { day: DailyItem; units: Units }) {
   const pop = Math.round(day.popMax * 100);
   return (
     <div className="flex items-center gap-3 py-3 border-b border-white/6 last:border-0">
@@ -47,12 +47,12 @@ function DailyRow({ day, tUnit }: { day: DailyItem; tUnit: string }) {
       </div>
       <div className="flex flex-col items-end gap-0.5 shrink-0 w-14">
         <span className="text-white text-sm font-semibold tabular-nums">
-          {day.tempMax}
-          {tUnit}
+          {temp(day.tempMax, units)}
+          {tempUnit(units)}
         </span>
         <span className="text-white/60 text-xs tabular-nums">
-          {day.tempMin}
-          {tUnit}
+          {temp(day.tempMin, units)}
+          {tempUnit(units)}
         </span>
       </div>
     </div>
@@ -61,7 +61,6 @@ function DailyRow({ day, tUnit }: { day: DailyItem; tUnit: string }) {
 
 export default function DailyForecast({ days, units }: Props) {
   const [expanded, setExpanded] = useState(false);
-  const tUnit = tempUnit(units);
 
   return (
     <div className="border-t border-white/8">
@@ -86,7 +85,7 @@ export default function DailyForecast({ days, units }: Props) {
           className="px-4 pt-3 pb-4 sm:px-6 sm:pt-4 sm:pb-5"
         >
           {days.map((day, i) => (
-            <DailyRow key={i} day={day} tUnit={tUnit} />
+            <DailyRow key={i} day={day} units={units} />
           ))}
         </div>
       )}
