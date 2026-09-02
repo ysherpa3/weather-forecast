@@ -51,7 +51,7 @@ The app runs at http://localhost:3000.
 
 ```
 app/           Routes, layout, and the API routes under app/api
-components/    UI, grouped by area (search, weather, shared)
+components/    WeatherDashboard, plus search/, weather/, and ui/
 hooks/         Data fetching and debouncing
 lib/           API client, response transform, rate limiting, helpers
 store/         Zustand store for selected city and unit preference
