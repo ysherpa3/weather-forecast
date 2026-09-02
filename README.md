@@ -16,8 +16,9 @@ Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · Zustand
 
 - Node 22.18 or newer. The tests are TypeScript files run directly by Node,
   which needs its built-in type stripping.
-- An [OpenWeatherMap One Call 3.0](https://openweathermap.org/api/one-call-3)
-  subscription. The free tier does not include this endpoint.
+- An [OpenWeatherMap One Call](https://openweathermap.org/api/one-call-3)
+  subscription. It is subscribed to separately from the standard API plans and
+  includes 1,000 calls per day at no cost.
 
 ## Setup
 
