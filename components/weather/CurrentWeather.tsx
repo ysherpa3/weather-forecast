@@ -81,20 +81,17 @@ export default function CurrentWeather({
     minute: "2-digit",
     timeZone: "UTC",
   });
-  const sunriseStr = new Date(
-    (current.sunrise + timezone) * 1000,
-  ).toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "UTC",
-  });
-  const sunsetStr = new Date(
-    (current.sunset + timezone) * 1000,
-  ).toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "UTC",
-  });
+  // Absent in polar regions during midnight sun and polar night
+  const timeAt = (unix: number | undefined) =>
+    unix === undefined
+      ? "—"
+      : new Date((unix + timezone) * 1000).toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: "UTC",
+        });
+  const sunriseStr = timeAt(current.sunrise);
+  const sunsetStr = timeAt(current.sunset);
 
   const feelsDiff = temp(current.feels_like, units) - temp(current.temp, units);
   const feelsContext =

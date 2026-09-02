@@ -1,44 +1,76 @@
 import { precipType } from "./utils.ts";
 import type { DailyItem, OnecallData, OnecallHourly } from "@/types/weather";
 
-interface OWMDailySlot {
-  dt: number;
-  temp: { min: number; max: number };
-  weather: Array<{
-    id: number;
-    main: string;
-    description: string;
-    icon: string;
-  }>;
-  pop: number;
-}
-
-export interface OWMOneCallResponse {
+/** Every One Call 4.0 endpoint wraps its records in the same envelope. */
+export interface OWM4Envelope<T> {
   timezone_offset: number;
-  current: object;
-  hourly?: OnecallHourly[];
-  daily?: OWMDailySlot[];
+  data?: T[];
 }
 
-/** Shrink OWM's One Call payload to what the UI actually renders. */
-export function transformOnecall(data: OWMOneCallResponse): OnecallData {
-  const { timezone_offset, current, hourly, daily } = data;
+interface OWMWeather {
+  id: number;
+  main: string;
+  description: string;
+  icon: string;
+}
 
-  // OWM can omit daily/hourly entirely for some coords/plans — don't crash on it
-  const dailySlots = daily ?? [];
-  const hourlySlots = hourly ?? [];
+export interface OWM4Current {
+  dt: number;
+  // Absent in polar regions during midnight sun and polar night.
+  sunrise?: number;
+  sunset?: number;
+  temp: number;
+  feels_like: number;
+  pressure: number;
+  humidity: number;
+  uvi: number;
+  clouds: number;
+  visibility: number;
+  wind_speed: number;
+  wind_deg: number;
+  weather: OWMWeather[];
+  rain?: { "1h": number };
+  snow?: { "1h": number };
+}
+
+export interface OWM4Hour {
+  dt: number;
+  temp: number;
+  feels_like: number;
+  humidity: number;
+  wind_speed: number;
+  wind_deg: number;
+  pop: number;
+  weather: OWMWeather[];
+}
+
+export interface OWM4Day {
+  dt: number;
+  temp: { day: number; min: number; max: number };
+  pop: number;
+  weather: OWMWeather[];
+}
+
+/** Shrink the three One Call 4.0 payloads to what the UI renders. */
+export function transformOnecall(
+  current: OWM4Current,
+  hours: OWM4Hour[],
+  days: OWM4Day[],
+  timezoneOffset: number,
+): OnecallData {
+  // Either forecast endpoint can fail or come back empty without the current
+  // conditions being unusable, so both degrade to nothing rather than throwing.
+  const hourSlots = hours ?? [];
+  const daySlots = days ?? [];
 
   // Temperatures stay unrounded and in Celsius; the client converts and rounds at
   // display time, so toggling units costs no refetch.
-  const today = dailySlots[0]
-    ? {
-        tempMin: dailySlots[0].temp.min,
-        tempMax: dailySlots[0].temp.max,
-      }
+  const today = daySlots[0]
+    ? { tempMin: daySlots[0].temp.min, tempMax: daySlots[0].temp.max }
     : null;
 
   // real precipitation probability for the coming hour, not a guess from the condition code
-  const nextHour = hourlySlots[0];
+  const nextHour = hourSlots[0];
   const precip = nextHour
     ? {
         pct: Math.round(nextHour.pop * 100),
@@ -46,9 +78,9 @@ export function transformOnecall(data: OWMOneCallResponse): OnecallData {
       }
     : null;
 
-  // daily[0] is today — skip it, take the next 7
-  const days: DailyItem[] = dailySlots.slice(1, 8).map((slot) => ({
-    dateLabel: new Date((slot.dt + timezone_offset) * 1000).toLocaleDateString(
+  // data[0] is today — skip it, take the next 7
+  const forecast: DailyItem[] = daySlots.slice(1, 8).map((slot) => ({
+    dateLabel: new Date((slot.dt + timezoneOffset) * 1000).toLocaleDateString(
       "en-US",
       {
         weekday: "short",
@@ -64,11 +96,11 @@ export function transformOnecall(data: OWMOneCallResponse): OnecallData {
   }));
 
   return {
-    current: current as OnecallData["current"],
-    hourly: hourlySlots.slice(0, 12),
+    current,
+    hourly: hourSlots.slice(0, 12) as OnecallHourly[],
     today,
-    days,
+    days: forecast,
     precip,
-    timezone_offset,
+    timezone_offset: timezoneOffset,
   };
 }

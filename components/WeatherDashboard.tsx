@@ -19,10 +19,12 @@ export default function WeatherDashboard() {
   const lon = selectedCity?.lon ?? null;
   const { data, isLoading, error } = useOnecall(lat, lon);
 
-  const isDay = data
-    ? data.current.dt >= data.current.sunrise &&
-      data.current.dt <= data.current.sunset
-    : true;
+  // Polar regions omit sunrise/sunset entirely; fall back to the daytime palette
+  const isDay =
+    data && data.current.sunrise !== undefined && data.current.sunset !== undefined
+      ? data.current.dt >= data.current.sunrise &&
+        data.current.dt <= data.current.sunset
+      : true;
   const bgStyle: CSSProperties = data
     ? getBackgroundStyle(data.current.weather[0].main, isDay)
     : DEFAULT_BG;

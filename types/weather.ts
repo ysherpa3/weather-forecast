@@ -2,8 +2,9 @@ export type Units = "metric" | "imperial";
 
 export interface OnecallCurrent {
   dt: number;
-  sunrise: number;
-  sunset: number;
+  // Absent in polar regions during midnight sun and polar night
+  sunrise?: number;
+  sunset?: number;
   temp: number;
   feels_like: number;
   pressure: number;
