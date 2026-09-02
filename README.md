@@ -65,10 +65,21 @@ The OpenWeatherMap key never reaches the browser. Two server routes proxy the
 upstream API:
 
 - `GET /api/geocode?q=` — city search, cached for 60 seconds
-- `GET /api/onecall?lat=&lon=` — weather, cached for 300 seconds
+- `GET /api/onecall?lat=&lon=` — weather
 
-`/api/onecall` trims the upstream payload to what the UI renders, so the
-client receives one small response instead of the full One Call document.
+One Call 4.0 serves current conditions, the hourly timeline and the daily
+timeline from three separate endpoints, so `/api/onecall` fetches all three in
+parallel and merges them into one small response shaped for the UI. They are
+cached for 300, 300 and 900 seconds respectively.
+
+That means **one city lookup costs three upstream calls**, so the 1,000 free
+calls per day work out to roughly 330 lookups. The forecast timelines return
+more records than the UI needs (20 hourly, 10 daily, against 12 and 8), so the
+paginated `next`/`prev` links are never followed — each one would bill as a
+further call.
+
+If either forecast endpoint fails the card still renders with current
+conditions; only the current endpoint is required.
 
 Both routes are rate limited to 30 requests per minute per IP. The limiter is
 in-memory and therefore per-instance, which caps casual abuse of the API quota
